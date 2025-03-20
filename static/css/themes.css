@@ -1,0 +1,45 @@
+/* Light and Dark Theme Variables */
+:root {
+    /* Light theme variables */
+    --bg-primary: #f0f8ff;
+    --bg-secondary: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --accent-color: #4CAF50;
+    --neon-glow: 0 0 10px rgba(0,0,0,0.1);
+    --button-hover: rgba(255,255,255,0.1);
+    --gradient-start: #e0e0e0;
+    --gradient-end: #ffffff;
+    --error-color: #ff4444;
+    --success-color: #4CAF50;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1a1b2e;
+    --bg-secondary: #2a2b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #00ff9d;
+    --neon-glow: 0 0 20px rgba(0, 255, 157, 0.3);
+    --button-hover: rgba(0, 255, 157, 0.1);
+    --gradient-start: #2a2b3d;
+    --gradient-end: #1a1b2e;
+    --error-color: #ff4444;
+    --success-color: #00ff9d;
+}
+
+/* Difficulty Button Colors */
+.easy { 
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.medium { 
+    background: linear-gradient(45deg, #FFA500, #ff8c00);
+    color: white;
+}
+
+.hard { 
+    background: linear-gradient(45deg, #FF4444, #cc0000);
+    color: white;
+}

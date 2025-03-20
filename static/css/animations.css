@@ -1,0 +1,75 @@
+/* Global Transitions */
+* {
+    transition: all 0.3s ease;
+}
+
+/* Light Sweep Animation */
+@keyframes lightSweep {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Floating Emoji Animation */
+@keyframes floatEmoji {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Loading Pulse Animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Winner Scale Animation */
+@keyframes winner {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Particle Animation */
+@keyframes particleAnimation {
+    0% { 
+        transform: translate(0, 0); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translate(var(--tx), var(--ty)); 
+        opacity: 0; 
+    }
+}
+
+/* Button Hover Animation */
+@keyframes buttonGlow {
+    0% { box-shadow: 0 0 5px var(--accent-color); }
+    50% { box-shadow: 0 0 20px var(--accent-color); }
+    100% { box-shadow: 0 0 5px var(--accent-color); }
+}
+
+/* Applied Animations */
+.emoji {
+    animation: floatEmoji 2s ease-in-out infinite;
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.winner-animation {
+    animation: winner 0.5s ease-in-out;
+}
+
+.game-container::before {
+    animation: lightSweep 3s linear infinite;
+}
+
+.choice-btn:hover {
+    animation: buttonGlow 1.5s infinite;
+}
+
+/* Theme Toggle Rotation */
+.theme-toggle:hover {
+    transform: rotate(180deg);
+}
+

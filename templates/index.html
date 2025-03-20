@@ -1,95 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Paper Scissors Game</title>
-    <style>
-        body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f0f8ff;
-            text-align: center;
-        }
-        .game-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        .choice-btn {
-            font-size: 24px;
-            margin: 10px;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background-color: #4CAF50;
-            color: white;
-        }
-        .choice-btn:hover {
-            transform: scale(1.1);
-        }
-        .difficulty-btn {
-            font-size: 18px;
-            margin: 5px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .easy { background-color: #4CAF50; color: white; }
-        .medium { background-color: #FFA500; color: white; }
-        .hard { background-color: #FF4444; color: white; }
-        #result {
-            font-size: 24px;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            min-height: 100px;
-        }
-        .score {
-            font-size: 20px;
-            margin: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-        }
-        .score span {
-            margin: 0 15px;
-        }
-        .emoji {
-            font-size: 40px;
-            margin: 10px;
-        }
-        .loading {
-            display: none;
-            font-size: 24px;
-            color: #666;
-        }
-        .selected {
-            opacity: 1 !important;
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-    </style>
+    <title>Cyber RPS Arena</title>
+    <link rel="stylesheet" href="/static/css/themes.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <h1>🎮 Rock Paper Scissors 🎮</h1>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
+    <div class="particles" id="particles"></div>
+    
+    <h1>🎮 Cyber RPS Arena 🎮</h1>
     
     <div class="game-container">
-        <h2>Choose Difficulty:</h2>
+        <h2>Select Difficulty Matrix:</h2>
         <div id="difficulty-buttons">
-            <button class="difficulty-btn easy selected" data-difficulty="easy">Easy</button>
-            <button class="difficulty-btn medium" data-difficulty="medium">Medium</button>
-            <button class="difficulty-btn hard" data-difficulty="hard">Hard</button>
+            <button class="difficulty-btn easy selected" data-difficulty="easy">EASY</button>
+            <button class="difficulty-btn medium" data-difficulty="medium">MEDIUM</button>
+            <button class="difficulty-btn hard" data-difficulty="hard">HARD</button>
         </div>
         
-        <h2>Make Your Choice:</h2>
+        <h2>Choose Your Weapon:</h2>
         <div class="choices">
             <button class="choice-btn" data-choice="rock">✊ Rock</button>
             <button class="choice-btn" data-choice="paper">✋ Paper</button>
@@ -102,112 +35,19 @@
         </div>
         
         <div id="loading" class="loading">
-            🎲 Making choice...
+            🎲 Calculating outcome...
         </div>
         <div id="result"></div>
     </div>
 
-    <script>
-        let currentDifficulty = 'easy';
-        let playerScore = 0;
-        let computerScore = 0;
-        let isPlaying = false;
+    <footer class="footer">
+        <p class="footer-text">
+            Relive your childhood memories - 
+            <a href="https://www.linkedin.com/in/ankit748/" target="_blank" class="footer-link">Ankit</a>
+            <span class="heart">❤️</span>
+        </p>
+    </footer>
 
-        // Set up difficulty buttons
-        document.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
-                e.target.classList.add('selected');
-                currentDifficulty = e.target.dataset.difficulty;
-            });
-        });
-
-        // Set up choice buttons
-        document.querySelectorAll('.choice-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (!isPlaying) {
-                    play(e.target.dataset.choice);
-                }
-            });
-        });
-
-        function getEmoji(choice) {
-            const emojis = {
-                'rock': '✊',
-                'paper': '✋',
-                'scissors': '✌️'
-            };
-            return emojis[choice] || '';
-        }
-
-        async function play(choice) {
-            if (isPlaying) return;
-            isPlaying = true;
-
-            // Show loading
-            const loadingDiv = document.getElementById('loading');
-            const resultDiv = document.getElementById('result');
-            loadingDiv.style.display = 'block';
-            resultDiv.innerHTML = '';
-
-            // Prepare form data
-            const formData = new FormData();
-            formData.append('player_choice', choice);
-            formData.append('difficulty', currentDifficulty);
-
-            try {
-                const response = await fetch('/play', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                // Hide loading
-                loadingDiv.style.display = 'none';
-
-                // Show result with animation
-                let resultHTML = `
-                    <div class="emoji" style="opacity: 0; transition: opacity 0.5s;">
-                        ${getEmoji(data.player_choice)} vs ${getEmoji(data.computer_choice)}
-                    </div>
-                `;
-
-                if (data.result === 'player') {
-                    playerScore++;
-                    resultHTML += '<p style="color: green">You win! 🎉</p>';
-                } else if (data.result === 'computer') {
-                    computerScore++;
-                    resultHTML += '<p style="color: red">Computer wins! 💻</p>';
-                } else {
-                    resultHTML += '<p style="color: blue">It\'s a tie! 🤝</p>';
-                }
-
-                resultDiv.innerHTML = resultHTML;
-                
-                // Animate result appearance
-                setTimeout(() => {
-                    resultDiv.querySelector('.emoji').style.opacity = '1';
-                }, 100);
-
-                // Update scores
-                document.getElementById('playerScore').textContent = playerScore;
-                document.getElementById('computerScore').textContent = computerScore;
-
-            } catch (error) {
-                console.error('Error:', error);
-                resultDiv.innerHTML = '<p style="color: red">Oops! Something went wrong. Try again!</p>';
-                loadingDiv.style.display = 'none';
-            }
-
-            isPlaying = false;
-        }
-    </script>
+    <script src="/static/js/game.js"></script>
 </body>
 </html>
-
-
