@@ -1,7 +1,7 @@
 
 Cyber RPS Arena 🎮
 
-A modern, interactive Rock Paper Scissors game with a futuristic design, multiple difficulty levels, and dark mode support. Built with FastAPI and vanilla JavaScript.
+A modern, interactive Rock Paper Scissors game with a futuristic design and dark mode support. Built with FastAPI and vanilla JavaScript.
 
 ## 🛠️ Technologies Used
 
