@@ -40,11 +40,16 @@
     }
 }
 
-/* Button Hover Animation */
-@keyframes buttonGlow {
-    0% { box-shadow: 0 0 5px var(--accent-color); }
-    50% { box-shadow: 0 0 20px var(--accent-color); }
-    100% { box-shadow: 0 0 5px var(--accent-color); }
+/* Heart Beat Animation */
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Footer Shimmer Animation */
+@keyframes shimmer {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(200%); }
 }
 
 /* Applied Animations */
@@ -60,16 +65,6 @@
     animation: winner 0.5s ease-in-out;
 }
 
-.game-container::before {
-    animation: lightSweep 3s linear infinite;
+.heart {
+    animation: heartbeat 1.5s ease-in-out infinite;
 }
-
-.choice-btn:hover {
-    animation: buttonGlow 1.5s infinite;
-}
-
-/* Theme Toggle Rotation */
-.theme-toggle:hover {
-    transform: rotate(180deg);
-}
-

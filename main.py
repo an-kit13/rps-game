@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -23,42 +23,48 @@ templates = Jinja2Templates(directory="templates")
 class GameLogic:
     def __init__(self):
         self.choices = ['rock', 'paper', 'scissors']
+        self.last_player_choices = []
+        self.max_history = 5
         
-    def get_computer_choice(self, difficulty):
-        if difficulty == 'easy':
+    def get_computer_choice(self):
+        if len(self.last_player_choices) < 2:
             return random.choice(self.choices)
-        elif difficulty == 'medium':
-            # 50% chance of making a smart choice
-            if random.random() < 0.5:
-                return random.choice(self.choices)
-            else:
-                return self.get_winning_move(random.choice(self.choices))
-        else:  # hard
-            # 75% chance of making a smart choice
-            if random.random() < 0.75:
-                return self.get_winning_move(random.choice(self.choices))
-            else:
-                return random.choice(self.choices)
+            
+        if len(set(self.last_player_choices[-2:])) == 1:
+            counter_move = self.get_winning_move(self.last_player_choices[-1])
+            return counter_move
+            
+        if random.random() < 0.7:
+            return random.choice(self.choices)
+        else:
+            return self.get_winning_move(self.last_player_choices[-1])
     
     def get_winning_move(self, choice):
-        if choice == 'rock':
-            return 'paper'
-        elif choice == 'paper':
-            return 'scissors'
-        else:
-            return 'rock'
+        winning_moves = {
+            'rock': 'paper',
+            'paper': 'scissors',
+            'scissors': 'rock'
+        }
+        return winning_moves[choice]
     
     def determine_winner(self, player_choice, computer_choice):
+        if player_choice not in self.choices:
+            raise HTTPException(status_code=400, detail="Invalid choice")
+            
+        self.last_player_choices.append(player_choice)
+        if len(self.last_player_choices) > self.max_history:
+            self.last_player_choices.pop(0)
+            
         if player_choice == computer_choice:
             return 'tie'
-        elif (
-            (player_choice == 'rock' and computer_choice == 'scissors') or
-            (player_choice == 'paper' and computer_choice == 'rock') or
-            (player_choice == 'scissors' and computer_choice == 'paper')
-        ):
-            return 'player'
-        else:
-            return 'computer'
+            
+        winning_combinations = {
+            'rock': 'scissors',
+            'paper': 'rock',
+            'scissors': 'paper'
+        }
+        
+        return 'player' if winning_combinations[player_choice] == computer_choice else 'computer'
 
 game = GameLogic()
 
@@ -70,18 +76,25 @@ async def home(request: Request):
     )
 
 @app.post("/play")
-async def play(
-    player_choice: str = Form(...),
-    difficulty: str = Form(...)
-):
-    computer_choice = game.get_computer_choice(difficulty)
-    result = game.determine_winner(player_choice, computer_choice)
-    
-    return JSONResponse({
-        "player_choice": player_choice,
-        "computer_choice": computer_choice,
-        "result": result
-    })
+async def play(request: Request, player_choice: str = Form(...)):
+    try:
+        if player_choice not in game.choices:
+            raise HTTPException(status_code=400, detail="Invalid choice")
+            
+        computer_choice = game.get_computer_choice()
+        result = game.determine_winner(player_choice, computer_choice)
+        
+        return JSONResponse({
+            "player_choice": player_choice,
+            "computer_choice": computer_choice,
+            "result": result,
+            "status": "success"
+        })
+    except Exception as e:
+        return JSONResponse({
+            "status": "error",
+            "message": str(e)
+        }, status_code=500)
 
 if __name__ == "__main__":
     import uvicorn

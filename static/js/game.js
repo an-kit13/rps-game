@@ -1,5 +1,3 @@
-// Game State
-let currentDifficulty = 'easy';
 let playerScore = 0;
 let computerScore = 0;
 let isPlaying = false;
@@ -23,11 +21,8 @@ function createParticles(count) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
-        // Random position
         const x = Math.random() * window.innerWidth;
         const y = Math.random() * window.innerHeight;
-        
-        // Random movement
         const tx = (Math.random() - 0.5) * 200;
         const ty = (Math.random() - 0.5) * 200;
         
@@ -45,21 +40,11 @@ function createParticles(count) {
     }
 }
 
-// Setup Difficulty Buttons
-document.querySelectorAll('.difficulty-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
-        e.target.classList.add('selected');
-        currentDifficulty = e.target.dataset.difficulty;
-        createParticles(10);
-    });
-});
-
 // Setup Choice Buttons
 document.querySelectorAll('.choice-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
         if (!isPlaying) {
-            play(e.target.dataset.choice);
+            await play(e.target.dataset.choice);
             createParticles(5);
         }
     });
@@ -75,6 +60,50 @@ function getEmoji(choice) {
     return emojis[choice] || '';
 }
 
+// Show Error Message
+function showError(message) {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `
+        <div class="error-message" style="color: var(--error-color)">
+            <p>🚫 ${message}</p>
+            <p>Please try again!</p>
+        </div>
+    `;
+}
+
+// Update Game UI
+function updateGameUI(data) {
+    const resultDiv = document.getElementById('result');
+    
+    let resultHTML = `
+        <div class="emoji" style="opacity: 0; transition: opacity 0.5s;">
+            ${getEmoji(data.player_choice)} vs ${getEmoji(data.computer_choice)}
+        </div>
+    `;
+
+    if (data.result === 'player') {
+        playerScore++;
+        resultHTML += '<p style="color: var(--success-color)">Victory! 🎉</p>';
+        createParticles(30);
+    } else if (data.result === 'computer') {
+        computerScore++;
+        resultHTML += '<p style="color: var(--error-color)">Defeated! 💻</p>';
+    } else {
+        resultHTML += '<p style="color: var(--text-secondary)">Draw! 🤝</p>';
+    }
+
+    resultDiv.innerHTML = resultHTML;
+    resultDiv.classList.add('winner-animation');
+    
+    setTimeout(() => {
+        resultDiv.querySelector('.emoji').style.opacity = '1';
+        resultDiv.classList.remove('winner-animation');
+    }, 100);
+
+    document.getElementById('playerScore').textContent = playerScore;
+    document.getElementById('computerScore').textContent = computerScore;
+}
+
 // Main Game Logic
 async function play(choice) {
     if (isPlaying) return;
@@ -82,61 +111,45 @@ async function play(choice) {
 
     const loadingDiv = document.getElementById('loading');
     const resultDiv = document.getElementById('result');
-    loadingDiv.style.display = 'block';
-    resultDiv.innerHTML = '';
-
-    const formData = new FormData();
-    formData.append('player_choice', choice);
-    formData.append('difficulty', currentDifficulty);
-
+    
     try {
+        loadingDiv.style.display = 'block';
+        resultDiv.innerHTML = '';
+
+        const formData = new FormData();
+        formData.append('player_choice', choice);
+
         const response = await fetch('/play', {
             method: 'POST',
             body: formData
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
         const data = await response.json();
-        loadingDiv.style.display = 'none';
 
-        let resultHTML = `
-            <div class="emoji" style="opacity: 0; transition: opacity 0.5s;">
-                ${getEmoji(data.player_choice)} vs ${getEmoji(data.computer_choice)}
-            </div>
-        `;
-
-        if (data.result === 'player') {
-            playerScore++;
-            resultHTML += '<p style="color: var(--success-color)">Victory! 🎉</p>';
-            createParticles(30);
-        } else if (data.result === 'computer') {
-            computerScore++;
-            resultHTML += '<p style="color: var(--error-color)">Defeated! 💻</p>';
-        } else {
-            resultHTML += '<p style="color: var(--text-secondary)">Draw! 🤝</p>';
+        if (!response.ok) {
+            throw new Error(data.message || 'Something went wrong!');
         }
 
-        resultDiv.innerHTML = resultHTML;
-        resultDiv.classList.add('winner-animation');
-        
-        setTimeout(() => {
-            resultDiv.querySelector('.emoji').style.opacity = '1';
-            resultDiv.classList.remove('winner-animation');
-        }, 100);
+        if (data.status === 'error') {
+            throw new Error(data.message);
+        }
 
-        document.getElementById('playerScore').textContent = playerScore;
-        document.getElementById('computerScore').textContent = computerScore;
+        updateGameUI(data);
 
     } catch (error) {
         console.error('Error:', error);
-        resultDiv.innerHTML = '<p style="color: var(--error-color)">System Error! Retry!</p>';
+        showError(error.message || 'Connection error! Please try again.');
+    } finally {
         loadingDiv.style.display = 'none';
+        isPlaying = false;
     }
-
-    isPlaying = false;
 }
 
-
+// Initialize game
+document.addEventListener('DOMContentLoaded', () => {
+    // Reset scores
+    playerScore = 0;
+    computerScore = 0;
+    document.getElementById('playerScore').textContent = '0';
+    document.getElementById('computerScore').textContent = '0';
+});
